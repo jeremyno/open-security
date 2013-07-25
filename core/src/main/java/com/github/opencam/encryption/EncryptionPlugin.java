@@ -1,6 +1,6 @@
 package com.github.opencam.encryption;
 
-public interface EncyptionPlugin {
+public interface EncryptionPlugin {
   public void setPassphrase(String passphrase);
 
   public byte[] encrypt(byte[] original);
