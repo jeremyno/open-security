@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tomcat-users>
+  <role rolename="security" />
+  <% node[:opensecurity][:tomcat][:users].each do |name, password| %>
+    <user username="<%= name %>" password="<%=password%>" roles="security" />
+  <% end %>
+</tomcat-users>

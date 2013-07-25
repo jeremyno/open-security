@@ -1,0 +1,50 @@
+<% node[:opensecurity][:cameras].each do |name, camera| %>
+cameras.<%= name %>.class=com.github.opencam.devices.LoftekCxs2200
+cameras.<%= name %>.hostname=<%= camera[:host] %>
+cameras.<%= name %>.port=<%= camera[:port] %>
+cameras.<%= name %>.username=<%= camera[:username] %>
+cameras.<%= name %>.password=<%= camera[:password] %>
+cameras.<%= name %>.strategy=Snapshot
+cameras.<%= name %>.alarmCheck=false
+cameras.<%= name %>.framerate=.5
+cameras.<%= name %>.alarmFramerate=1
+cameras.<%= name %>.systemDisconnectFramerate=1
+motion.<%= name %>.class=com.github.opencam.processing.BrightnessGrid
+motion.<%= name %>.x=20
+motion.<%= name %>.y=20
+motion.<%= name %>.step=4
+motion.<%= name %>.threshold=225
+<% end %>
+alarm.checkSeconds=5
+alarm.latentAlarmSeconds=120
+alarm.latentDisconnectSeconds=120
+alarm.permanentlyDisconnectedAfterSeconds=600
+system.stateTrackerDelaySeconds=1
+system.cameraDelaySeconds=.05
+initialDelaySeconds=1
+system.camera.localcache=<%= node[:opensecurity][:localcache] %>
+alarm.emailPicturesSeconds=5
+system.cleanDisk.checkEveryHours=1
+system.cleanDisk.Goal=.2
+system.cleanDisk.deleteAndCheck=36
+offsite.ftp.username=<%= node[:opensecurity][:ftp][:username] %>
+offsite.ftp.hostname=<%= node[:opensecurity][:ftp][:hostname] %>
+offsite.ftp.password=<%= node[:opensecurity][:ftp][:password] %>
+offsite.ftp.port=<%= node[:opensecurity][:ftp][:port] %>
+offsite.trailingEntries=30000
+offsite.maxTime=15
+offsite.passphrase=<%= node[:opensecurity][:ftp][:passphrase] %>
+email.alertRecipients=<%= node[:opensecurity][:email][:recipients] %>
+email.send.host=<%= node[:opensecurity][:email][:host] %>
+email.send.port=<%= node[:opensecurity][:email][:port] %>
+email.send.username=<%= node[:opensecurity][:email][:username] %>
+email.send.password=<%= node[:opensecurity][:email][:password] %>
+email.send.from=<%= node[:opensecurity][:email][:from] %>
+email.images.trailing.each=15
+email.delaySeconds=5
+system.log=<%= node[:opensecurity][:logfile] %>
+system.processImagesEvery=1
+system.pool.debug=false
+system.pool.debugFilter=10
+system.cameraPool.debug=false
+system.cameraPool.debugFilter=100
