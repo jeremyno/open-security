@@ -40,6 +40,7 @@ public class ZipFTPArchiver {
   }
 
   public void doUpload() {
+    System.out.println("Uploading");
     final ZipFile oldFile;
     synchronized (this) {
       oldFile = file;
@@ -47,21 +48,30 @@ public class ZipFTPArchiver {
       lastUpload = System.currentTimeMillis();
     }
 
+    final StopWatch watch = new StopWatch();
+    watch.start();
     byte[] zipFile = oldFile.closeAndReturnBytes();
+    watch.stop();
+    // TimingUtils.printNanoTime("closeAndReturn", watch);
     if (zipFile == null) {
       return;
     }
     final SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd_kkmmss");
     final String base = sdf.format(new Date());
 
-    final StopWatch watch = new StopWatch();
+    watch.reset();
     watch.start();
     zipFile = EncryptionUtils.encrypt(zipFile, password);
     watch.stop();
-    System.out.println("Took " + (float) watch.getNanoTime() / 1000000 + " ms");
+    // TimingUtils.printNanoTime("encryption", watch);
     final InputStream is = new ByteArrayInputStream(zipFile);
     final String file = "upload_" + base + ".zip";
+    watch.reset();
+    watch.start();
     store.saveFile(file, is);
+    watch.stop();
+    // TimingUtils.printNanoTime("FTP upload", watch);
     IOUtils.closeQuietly(is);
+    System.out.println("done uploading");
   }
 }

@@ -27,6 +27,8 @@ import com.github.opencam.imagegrabber.BeanResource;
 import com.github.opencam.imagegrabber.ImageSource;
 import com.github.opencam.imagegrabber.Resource;
 import com.github.opencam.imagewriter.FTPFileSink;
+import com.github.opencam.imagewriter.Filestore;
+import com.github.opencam.imagewriter.RoundRobinFilestorePool;
 import com.github.opencam.processing.ImageDiff;
 import com.github.opencam.processing.StatefulDiffer;
 import com.github.opencam.security.AlarmStatus;
@@ -223,8 +225,12 @@ public class OpenCamController {
     cleanDiskGoal = Double.parseDouble(getProp("system.cleanDisk.Goal"));
     localcache = getProp("system.camera.localcache");
     deleteAndCheck = Integer.parseInt(getProp("system.cleanDisk.deleteAndCheck"));
-    final FTPFileSink sink = new FTPFileSink(getProp("offsite.ftp.hostname"), Integer.parseInt(getProp("offsite.ftp.port")), getProp("offsite.ftp.username"), getProp("offsite.ftp.password"));
-    archive = new ZipFTPArchiver(sink, getIProp("offsite.trailingEntries"), getProp("offsite.passphrase"));
+    final List<Filestore> sinkSource = new ArrayList<Filestore>();
+    for (int i = 0; i < ap.getInteger("offsite.ftp.connectionCount", 3); i++) {
+      final FTPFileSink sink = new FTPFileSink(getProp("offsite.ftp.hostname"), Integer.parseInt(getProp("offsite.ftp.port")), getProp("offsite.ftp.username"), getProp("offsite.ftp.password"));
+      sinkSource.add(sink);
+    }
+    archive = new ZipFTPArchiver(RoundRobinFilestorePool.fromList(sinkSource), getIProp("offsite.trailingEntries"), getProp("offsite.passphrase"));
     abridgedEmail = ap.getList("email.alertRecipients");
     emailer = new SendEmailTLSImpl(ap.getProperty("email.send.host"), ap.getInteger("email.send.port"), ap.getProperty("email.send.username"), ap.getProperty("email.send.password"), ap.getProperty("email.send.from"));
     this.trailingImages = new TrailingImages(ap.getInteger("email.images.trailing.each"), ap.getInteger("system.images.processed", 1));
