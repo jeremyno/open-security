@@ -6,6 +6,7 @@ import java.io.OutputStream;
 import java.security.AlgorithmParameters;
 import java.security.SecureRandom;
 import java.security.spec.KeySpec;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.crypto.Cipher;
 import javax.crypto.CipherInputStream;
@@ -21,17 +22,68 @@ import org.apache.commons.io.output.ByteArrayOutputStream;
 
 public class Aes128Encyption implements EncryptionPlugin {
   String passphrase;
+  int approxSaltRepeats = 50;
+  AesKey lastKey;
 
   public void setPassphrase(final String passphrase) {
     this.passphrase = passphrase;
   }
 
   public byte[] encrypt(final byte[] original) {
-    return encrypt(original, passphrase);
+    final AesKey key = getKey();
+    return encrypt(original, key);
+  }
+
+  private AesKey getKey() {
+    if (lastKey == null) {
+      synchronized (this) {
+        lastKey = new AesKey(passphrase);
+        return lastKey;
+      }
+    }
+
+    if (lastKey.incrementAndGet() % approxSaltRepeats == 0) {
+      lastKey = new AesKey(passphrase);
+    }
+
+    return lastKey;
+  }
+
+  private class AesKey {
+    AtomicInteger count = new AtomicInteger();
+    final byte[] salt = new byte[saltLength];
+    final SecretKey secret;
+
+    public AesKey(final String passphrase) {
+      r.nextBytes(salt);
+      SecretKeyFactory factory;
+      try {
+        factory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA1");
+        final KeySpec spec = new PBEKeySpec(passphrase.toCharArray(), salt, ENC_ITERATIONS, KEY_SIZE);
+        final SecretKey tmp = factory.generateSecret(spec);
+
+        secret = new SecretKeySpec(tmp.getEncoded(), "AES");
+      } catch (final Exception e) {
+        throw new RuntimeException("Problem creating key");
+      }
+    }
+
+    public byte[] getSalt() {
+      return salt;
+    }
+
+    public SecretKey getSecret() {
+      return secret;
+    }
+
+    public int incrementAndGet() {
+      return count.incrementAndGet();
+    }
+
   }
 
   public byte[] decrypt(final byte[] encd) {
-    return encrypt(encd, passphrase);
+    return decrypt(encd, passphrase);
   }
 
   private static final int KEY_SIZE = 128;
@@ -40,11 +92,11 @@ public class Aes128Encyption implements EncryptionPlugin {
   private final static int saltLength = 16;
   private final static int ivLength = 16;
 
-  public static byte[] encrypt(final byte[] data, final String password) {
+  private static byte[] encrypt(final byte[] data, final AesKey key) {
     try {
       final ByteArrayInputStream in = new ByteArrayInputStream(data);
       final ByteArrayOutputStream base = new ByteArrayOutputStream(data.length + saltLength + ivLength);
-      final OutputStream stream = getEncryptStream(base, password);
+      final OutputStream stream = getEncryptStream(base, key);
       IOUtils.copy(in, stream);
       IOUtils.closeQuietly(in);
       IOUtils.closeQuietly(stream);
@@ -81,7 +133,7 @@ public class Aes128Encyption implements EncryptionPlugin {
       IOUtils.readFully(stream, iv);
 
       final SecretKeyFactory factory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA1");
-      final KeySpec spec = new PBEKeySpec(password.toCharArray(), salt, 65536, 128);
+      final KeySpec spec = new PBEKeySpec(password.toCharArray(), salt, ENC_ITERATIONS, KEY_SIZE);
       final SecretKey tmp = factory.generateSecret(spec);
       final SecretKey secret = new SecretKeySpec(tmp.getEncoded(), "AES");
       final Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
@@ -92,25 +144,21 @@ public class Aes128Encyption implements EncryptionPlugin {
     }
   }
 
-  public static OutputStream getEncryptStream(final OutputStream ostream, final String password) {
-    final byte[] salt = new byte[saltLength];
-    r.nextBytes(salt);
+  public static OutputStream getEncryptStream(final OutputStream ostream, final AesKey key) {
 
     try {
       /* Derive the key, given password and salt. */
-      final SecretKeyFactory factory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA1");
-      final KeySpec spec = new PBEKeySpec(password.toCharArray(), salt, ENC_ITERATIONS, KEY_SIZE);
-      final SecretKey tmp = factory.generateSecret(spec);
-      final SecretKey secret = new SecretKeySpec(tmp.getEncoded(), "AES");
       /* Encrypt the message. */
       final Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
-      cipher.init(Cipher.ENCRYPT_MODE, secret);
+      cipher.init(Cipher.ENCRYPT_MODE, key.getSecret());
       final AlgorithmParameters params = cipher.getParameters();
       final byte[] iv = params.getParameterSpec(IvParameterSpec.class).getIV();
 
       if (iv.length != ivLength) {
         throw new RuntimeException("IV was unexpected length");
       }
+
+      final byte[] salt = key.getSalt();
 
       ostream.write(salt);
       ostream.write(iv);

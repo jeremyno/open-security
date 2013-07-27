@@ -7,6 +7,7 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import com.github.opencam.imagegrabber.StreamUtils;
+import com.github.opencam.util.TimingUtils;
 
 public class EncryptionTest {
   @Test
@@ -16,11 +17,22 @@ public class EncryptionTest {
     final Random r = new Random();
     r.nextBytes(stream);
 
+    final EncryptionPlugin plugin = new Aes128Encyption();
+
+    testEncryption(passphrase, stream, plugin);
+  }
+
+  private void testEncryption(final String passphrase, final byte[] stream, final EncryptionPlugin plugin) {
+    final int reps = 100;
     final StopWatch watch = new StopWatch();
+    byte[] enc = null;
     watch.start();
-    final byte[] enc = EncryptionUtils.encrypt(stream, passphrase);
+    plugin.setPassphrase(passphrase);
+    for (int i = 0; i < reps; i++) {
+      enc = plugin.encrypt(stream);
+    }
     watch.stop();
-    System.out.println("Took " + (float) watch.getNanoTime() / 1000000 + " ms");
-    Assert.assertArrayEquals(stream, EncryptionUtils.decrypt(enc, passphrase));
+    TimingUtils.printNanoTime("Aerage timing test over " + reps + " of " + plugin, watch.getNanoTime() / reps);
+    Assert.assertArrayEquals(stream, plugin.decrypt(enc));
   }
 }
