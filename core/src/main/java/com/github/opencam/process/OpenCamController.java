@@ -140,7 +140,7 @@ public class OpenCamController {
   private final long cleanDiskEvery;
   private final double cleanDiskGoal;
   private final int deleteAndCheck;
-  private final ZipFTPArchiver archive;
+  private final Archiver archive;
   List<String> abridgedEmail;
   private final SendEmail emailer;
   private long emailDelay;
@@ -226,11 +226,17 @@ public class OpenCamController {
     localcache = getProp("system.camera.localcache");
     deleteAndCheck = Integer.parseInt(getProp("system.cleanDisk.deleteAndCheck"));
     final List<Filestore> sinkSource = new ArrayList<Filestore>();
-    for (int i = 0; i < ap.getInteger("offsite.ftp.connectionCount", 3); i++) {
-      final FTPFileSink sink = new FTPFileSink(getProp("offsite.ftp.hostname"), Integer.parseInt(getProp("offsite.ftp.port")), getProp("offsite.ftp.username"), getProp("offsite.ftp.password"));
-      sinkSource.add(sink);
+    final int ftpCount = ap.getInteger("offsite.ftp.connectionCount", 3);
+    if (ftpCount > 0) {
+      for (int i = 0; i < ftpCount; i++) {
+        final FTPFileSink sink = new FTPFileSink(getProp("offsite.ftp.hostname"), Integer.parseInt(getProp("offsite.ftp.port")), getProp("offsite.ftp.username"), getProp("offsite.ftp.password"));
+        sinkSource.add(sink);
+      }
+      archive = new ZipFTPArchiver(RoundRobinFilestorePool.fromList(sinkSource), getIProp("offsite.trailingEntries"), getProp("offsite.passphrase"));
+    } else {
+      archive = new NoOpArchiver();
     }
-    archive = new ZipFTPArchiver(RoundRobinFilestorePool.fromList(sinkSource), getIProp("offsite.trailingEntries"), getProp("offsite.passphrase"));
+
     abridgedEmail = ap.getList("email.alertRecipients");
     emailer = new SendEmailTLSImpl(ap.getProperty("email.send.host"), ap.getInteger("email.send.port"), ap.getProperty("email.send.username"), ap.getProperty("email.send.password"), ap.getProperty("email.send.from"));
     this.trailingImages = new TrailingImages(ap.getInteger("email.images.trailing.each"), ap.getInteger("system.images.processed", 1));
