@@ -60,7 +60,7 @@ public class OpenCamController {
     public void run() {
       if (OpenCamController.this.isSystemArmed()) {
         try {
-          String message = "<h2>Changed state from " + lastStatus + " to " + newStatus + "</h2>\n";
+          String message = "<h2>Changed state from " + lastStatus + " to " + newStatus + " (" + OpenCamController.this.getStatusString() + ")</h2>\n";
 
           message += SystemStatusWriter.getStatus(OpenCamController.this);
 
