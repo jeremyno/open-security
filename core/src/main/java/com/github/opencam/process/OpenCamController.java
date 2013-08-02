@@ -61,13 +61,10 @@ public class OpenCamController {
       if (OpenCamController.this.isSystemArmed()) {
         try {
           String message = "<h2>Changed state from " + lastStatus + " to " + newStatus + "</h2>\n";
-          message += "<ul>";
-          for (final SecurityDeviceStatus i : getDeviceStatus()) {
-            message += "<li>" + i + "</li>\n";
-          }
-          message += "</li>";
 
-          message += "</ul><h2>Images:</h2>";
+          message += SystemStatusWriter.getStatus(OpenCamController.this);
+
+          message += "<h2>Images:</h2>";
           // prepare all images
           int i = 0;
           final List<Resource> resources = new ArrayList<Resource>(50);

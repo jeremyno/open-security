@@ -1,3 +1,4 @@
+<%@page import="com.github.opencam.process.ImageStatusWriter"%>
 <%@page import="com.github.opencam.process.SecurityDeviceStatus"%>
 <%@page import="com.github.opencam.process.OpenCamController"%>
 <%
@@ -12,25 +13,10 @@ String width = request.getParameter("w") != null ?request.getParameter("w") : "6
 <% } else { %>
 <a href="?do=Arm" class="command">Arm</a>
 <% } %>
-<ul>
-<%
-long lastTimestamp =0;
-long firstTimestamp = Long.MAX_VALUE;
-for (final SecurityDeviceStatus i : opencam.getDeviceStatus()) {
-  out.println("<li>" +i+"</li>");
-  long timestamp = i.getChekinTimestamp();
-  if (lastTimestamp < timestamp) {
-    lastTimestamp = timestamp;
-  }
 
-  if (firstTimestamp > timestamp) {
-    firstTimestamp = timestamp;
-  }
-}
+<%
+ImageStatusWriter.writeStatus(opencam, out);
 %>
-<li>Processing is running <%= (float)(System.currentTimeMillis()-lastTimestamp)/1000 %> to <%= (float)(System.currentTimeMillis()-firstTimestamp)/1000 %> seconds behind.</li>
-<li>Current System time is <%= new java.util.Date() %></li>
-</ul>
 
 <% 
 for (final String i : opencam.getCameraNames()) {
