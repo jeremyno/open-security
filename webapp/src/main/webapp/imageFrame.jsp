@@ -1,4 +1,5 @@
-<%@page import="com.github.opencam.process.ImageStatusWriter"%>
+<%@page import="java.io.PrintWriter"%>
+<%@page import="com.github.opencam.process.SystemStatusWriter"%>
 <%@page import="com.github.opencam.process.SecurityDeviceStatus"%>
 <%@page import="com.github.opencam.process.OpenCamController"%>
 <%
@@ -15,7 +16,7 @@ String width = request.getParameter("w") != null ?request.getParameter("w") : "6
 <% } %>
 
 <%
-ImageStatusWriter.writeStatus(opencam, out);
+SystemStatusWriter.writeStatus(opencam, new PrintWriter(out));
 %>
 
 <% 
