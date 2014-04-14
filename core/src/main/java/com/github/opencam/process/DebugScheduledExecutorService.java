@@ -27,7 +27,7 @@ public class DebugScheduledExecutorService implements ScheduledExecutorService {
     this.base = base;
     this.debugOutput = debug;
     this.debugFilter = minTime;
-    System.out.println("FIlter is: " + this.debugFilter + " and min time is " + minTime);
+    System.out.println("Filter is: " + this.debugFilter + " and min time is " + minTime);
     if (debug) {
       base.scheduleWithFixedDelay(new Runnable() {
 

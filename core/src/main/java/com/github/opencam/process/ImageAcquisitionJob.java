@@ -41,4 +41,8 @@ public class ImageAcquisitionJob implements Runnable {
     return lastImage;
   }
 
+  @Override
+  public String toString() {
+    return "ImageAquisitionJob [source=" + d + "]";
+  }
 }

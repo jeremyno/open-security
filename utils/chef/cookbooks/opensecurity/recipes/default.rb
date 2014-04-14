@@ -80,5 +80,5 @@ end
 
 
 service node[:opensecurity][:tomcat][:service] do
-  action :start
+  action [:start, :restart]
 end

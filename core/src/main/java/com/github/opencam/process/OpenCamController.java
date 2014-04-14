@@ -12,6 +12,7 @@ import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -257,9 +258,11 @@ public class OpenCamController {
       try {
         final Class<?> differClazz = Class.forName(mprops.getProperty("class"));
         final Object differ = differClazz.newInstance();
-        final Configurable configurable = (Configurable) differ;
-        configurable.configure(mprops);
-        final StatefulDiffer value = new StatefulDiffer((ImageDiff<?>) configurable);
+        if (differ instanceof Configurable) {
+          final Configurable configurable = (Configurable) differ;
+          configurable.configure(mprops);
+        }
+        final StatefulDiffer value = new StatefulDiffer((ImageDiff<?>) differ);
         value.configure(mprops);
         differs.put(sourceName, value);
       } catch (final Exception e) {
@@ -292,7 +295,18 @@ public class OpenCamController {
   }
 
   public void runOpencam() {
-    service = new DebugScheduledExecutorService(Executors.newScheduledThreadPool(threadCount), props.getBoolean("system.pool.debug"), props.getDouble("system.pool.debugFilter"));
+    final String prefix = props.getProperty("system.threads.name", "Executor-");
+    final ScheduledExecutorService baseService = Executors.newScheduledThreadPool(threadCount, new ThreadFactory() {
+      int number = 0;
+
+      public synchronized Thread newThread(final Runnable r) {
+        final Thread t = new Thread(r);
+        t.setName(prefix + number++);
+        return t;
+      }
+    });
+
+    service = new DebugScheduledExecutorService(baseService, props.getBoolean("system.pool.debug"), props.getDouble("system.pool.debugFilter"));
     cameraThreads = new DebugScheduledExecutorService(Executors.newScheduledThreadPool(imageSources.size()), props.getBoolean("system.cameraPool.debug"), props.getDouble("system.cameraPool.debugFilter"));
 
     for (final SecurityDevice dev : securityDevices.values()) {

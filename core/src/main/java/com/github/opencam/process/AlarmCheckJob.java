@@ -80,4 +80,9 @@ public class AlarmCheckJob implements Runnable {
   public SecurityDevice getDevice() {
     return this.device;
   }
+
+  @Override
+  public String toString() {
+    return "AlarmCheckJob [source=" + device + "]";
+  }
 }
