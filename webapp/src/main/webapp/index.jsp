@@ -19,7 +19,7 @@ if (act != null) {
 }
 
 String width = request.getParameter("w") != null ?request.getParameter("w") : "640";
-String rate = request.getParameter("r") != null ? request.getParameter("r") : "3000";
+String rate = request.getParameter("r") != null ? request.getParameter("r") : "5000";
 %>
 <html>
 <head>
