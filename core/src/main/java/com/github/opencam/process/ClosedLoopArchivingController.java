@@ -45,7 +45,8 @@ public class ClosedLoopArchivingController implements OpenCamController {
         httpUser.setConnectionManager(cm);
       }
 
-      final ClosedLoopImageThread thread = new ClosedLoopImageThread(plugin, archive);
+      final long waitTime = (long) (1000 / plugin.getCurrentFramerate());
+      final ClosedLoopImageThread thread = new ClosedLoopImageThread(plugin, archive, waitTime);
       camMap.put(name, thread);
       threads.add(thread);
     }
@@ -95,7 +96,7 @@ public class ClosedLoopArchivingController implements OpenCamController {
   public String getStatusString() {
     final List<String> responseTimes = new ArrayList<String>();
     for (final ClosedLoopImageThread thread : threads) {
-      responseTimes.add(thread.getSrc().getName() + "/" + thread.getLastProcessTime());
+      responseTimes.add(thread.getSrc().getName() + "/" + thread.getLastProcessTime() + "{" + thread.getLastWait() + "}");
     }
     return "Operating. Last Response Times: " + responseTimes;
   }

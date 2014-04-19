@@ -10,13 +10,16 @@ public class ClosedLoopImageThread extends Thread {
 
   long lastTime;
   long lastStart;
+  long targetTime;
+  long lastWait;
 
   boolean run = true;
 
-  public ClosedLoopImageThread(final ImageSource src, final Archiver archiver) {
+  public ClosedLoopImageThread(final ImageSource src, final Archiver archiver, final long targetTime) {
     super();
     this.src = src;
     this.archiver = archiver;
+    this.targetTime = targetTime;
   }
 
   @Override
@@ -27,6 +30,15 @@ public class ClosedLoopImageThread extends Thread {
       lastTime = System.currentTimeMillis() - lastStart;
       lastStart = System.currentTimeMillis();
       lastResource.addNotes("Last process time: " + lastTime + " ms");
+
+      lastWait = targetTime - lastTime;
+
+      lastWait = Math.max(lastWait, 100);
+      try {
+        Thread.sleep(lastWait);
+      } catch (final InterruptedException e) {
+        throw new RuntimeException(e);
+      }
     }
   }
 
@@ -44,5 +56,9 @@ public class ClosedLoopImageThread extends Thread {
 
   public ImageSource getSrc() {
     return src;
+  }
+
+  public long getLastWait() {
+    return lastWait;
   }
 }

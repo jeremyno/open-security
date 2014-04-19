@@ -15,6 +15,9 @@ motion.<%= name %>.y=20
 motion.<%= name %>.step=4
 motion.<%= name %>.threshold=225
 <% end %>
+<% unless node[:opensecurity][:controllerClass].nil? %>
+controller.class=<%= node[:opensecurity][:controllerClass] %>
+<% end %>
 alarm.checkSeconds=5
 alarm.latentAlarmSeconds=120
 alarm.latentDisconnectSeconds=120
