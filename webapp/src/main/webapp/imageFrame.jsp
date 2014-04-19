@@ -1,9 +1,9 @@
 <%@page import="java.io.PrintWriter"%>
 <%@page import="com.github.opencam.process.SystemStatusWriter"%>
 <%@page import="com.github.opencam.process.SecurityDeviceStatus"%>
-<%@page import="com.github.opencam.process.PoolingOpenCamController"%>
+<%@page import="com.github.opencam.process.OpenCamController"%>
 <%
-  PoolingOpenCamController opencam = (PoolingOpenCamController)request.getAttribute("opencam");
+  OpenCamController opencam = (OpenCamController)request.getAttribute("opencam");
 String width = request.getParameter("w") != null ?request.getParameter("w") : "640";
 %>
 

@@ -16,22 +16,22 @@ import com.github.opencam.imagewriter.Filestore;
 
 public class ZipFTPArchiver implements Archiver {
   Filestore store;
-  int trailingEntries = 0;
   LinkedList<String> entries = new LinkedList<String>();
   long lastUpload = 0;
   private ZipFile file;
   private final String password;
 
-  public ZipFTPArchiver(final Filestore store, final int trailingEntries, final String password) {
+  public ZipFTPArchiver(final Filestore store, final String password) {
     super();
     this.store = store;
-    this.trailingEntries = trailingEntries;
     this.lastUpload = System.currentTimeMillis();
     this.password = password;
     file = new ZipFile();
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see com.github.opencam.process.Archiver#processImage(com.github.opencam.imagegrabber.Resource)
    */
   public void processImage(final Resource resource) {
@@ -42,7 +42,9 @@ public class ZipFTPArchiver implements Archiver {
     }
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see com.github.opencam.process.Archiver#doUpload()
    */
   public void doUpload() {

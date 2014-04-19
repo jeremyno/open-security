@@ -4,9 +4,9 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 
 public class SystemStatusWriter {
-  PoolingOpenCamController controller;
+  OpenCamController controller;
 
-  public SystemStatusWriter(final PoolingOpenCamController controller) {
+  public SystemStatusWriter(final OpenCamController controller) {
     super();
     this.controller = controller;
   }
@@ -33,12 +33,12 @@ public class SystemStatusWriter {
     out.println("</ul>");
   }
 
-  public static void writeStatus(final PoolingOpenCamController control, final PrintWriter writer) {
+  public static void writeStatus(final OpenCamController control, final PrintWriter writer) {
     final SystemStatusWriter i = new SystemStatusWriter(control);
     i.writeImageStatus(writer);
   }
 
-  public static String getStatus(final PoolingOpenCamController control) {
+  public static String getStatus(final OpenCamController control) {
     final StringWriter out = new StringWriter();
     writeStatus(control, new PrintWriter(out));
     return out.toString();

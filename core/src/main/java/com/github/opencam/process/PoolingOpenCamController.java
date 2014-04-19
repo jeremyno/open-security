@@ -23,16 +23,13 @@ import com.github.opencam.email.SendEmailTLSImpl;
 import com.github.opencam.imagegrabber.BeanResource;
 import com.github.opencam.imagegrabber.ImageSource;
 import com.github.opencam.imagegrabber.Resource;
-import com.github.opencam.imagewriter.FTPFileSink;
-import com.github.opencam.imagewriter.Filestore;
-import com.github.opencam.imagewriter.RoundRobinFilestorePool;
 import com.github.opencam.processing.ImageDiff;
 import com.github.opencam.processing.StatefulDiffer;
 import com.github.opencam.security.AlarmStatus;
 import com.github.opencam.security.SecurityDevice;
 import com.github.opencam.ui.Configurable;
-import com.github.opencam.ui.SecurityPlugin;
 import com.github.opencam.util.ApplicationProperties;
+import com.github.opencam.util.ClassLoaderUtils;
 
 /**
  * This is where the magic happens. We grab all of the inputs, and immediately locally cache them
@@ -98,23 +95,12 @@ public class PoolingOpenCamController implements OpenCamController {
     }
   }
 
-  private final class ArchiveJob implements Runnable {
-    public void run() {
-      try {
-        archive.doUpload();
-      } catch (final Exception e) {
-        log.log(Level.WARNING, "Unable to do upload", e);
-      }
-    }
-  }
-
   ApplicationProperties props;
   List<ImageSource> imageSources = new ArrayList<ImageSource>();
   Map<String, SecurityDevice> securityDevices = new HashMap<String, SecurityDevice>();
 
   TrailingImages trailingImages;
   LastTimestamp lastAlarm = new LastTimestamp();
-  private final long initialDelay;
   private final long alarmCheck;
   protected LastTimestamp lastNotConnectedAlarm = new LastTimestamp();
   private final long latentDisconnect;
@@ -133,7 +119,7 @@ public class PoolingOpenCamController implements OpenCamController {
   private final long cleanDiskEvery;
   private final double cleanDiskGoal;
   private final int deleteAndCheck;
-  private final Archiver archive;
+  final Archiver archive;
   List<String> abridgedEmail;
   private final SendEmail emailer;
   private long emailDelay;
@@ -155,11 +141,7 @@ public class PoolingOpenCamController implements OpenCamController {
       final Map<String, String> configs = camConfig.getValue();
       final String name = camConfig.getKey();
       try {
-        final Class<?> clazz = Class.forName(configs.get("class"));
-        final Object pluginOb = clazz.newInstance();
-        final SecurityPlugin plugin = (SecurityPlugin) pluginOb;
-        plugin.setName(name);
-        plugin.configure(configs);
+        final Object plugin = ClassLoaderUtils.loadObject(configs.get("class"), config.getAplicationProperties(), name, cm);
         if (plugin instanceof SecurityDevice) {
           securityDevices.put(name, (SecurityDevice) plugin);
         }
@@ -181,7 +163,6 @@ public class PoolingOpenCamController implements OpenCamController {
 
     this.props = config.getAplicationProperties();
     alarmCheck = (long) (Double.parseDouble(getProp("alarm.checkSeconds")) * 1000);
-    initialDelay = Integer.parseInt(getProp("initialDelaySeconds")) * 1000;
     latentDisconnect = (long) (Double.parseDouble(getProp("alarm.latentDisconnectSeconds")) * 1000);
     latentAlarm = (long) (Double.parseDouble(getProp("alarm.latentAlarmSeconds")) * 1000);
     stateTrackerDelay = (long) (Double.parseDouble(getProp("system.stateTrackerDelaySeconds")) * 1000);
@@ -191,17 +172,8 @@ public class PoolingOpenCamController implements OpenCamController {
     cleanDiskGoal = Double.parseDouble(getProp("system.cleanDisk.Goal"));
     localcache = getProp("system.camera.localcache");
     deleteAndCheck = Integer.parseInt(getProp("system.cleanDisk.deleteAndCheck"));
-    final List<Filestore> sinkSource = new ArrayList<Filestore>();
-    final int ftpCount = props.getInteger("offsite.ftp.connectionCount", 3);
-    if (ftpCount > 0) {
-      for (int i = 0; i < ftpCount; i++) {
-        final FTPFileSink sink = new FTPFileSink(getProp("offsite.ftp.hostname"), Integer.parseInt(getProp("offsite.ftp.port")), getProp("offsite.ftp.username"), getProp("offsite.ftp.password"));
-        sinkSource.add(sink);
-      }
-      archive = new ZipFTPArchiver(RoundRobinFilestorePool.fromList(sinkSource), getIProp("offsite.trailingEntries"), getProp("offsite.passphrase"));
-    } else {
-      archive = new NoOpArchiver();
-    }
+
+    archive = config.getNewArchiver();
 
     abridgedEmail = props.getList("email.alertRecipients");
     emailer = new SendEmailTLSImpl(props.getProperty("email.send.host"), props.getInteger("email.send.port"), props.getProperty("email.send.username"), props.getProperty("email.send.password"), props.getProperty("email.send.from"));
@@ -278,24 +250,24 @@ public class PoolingOpenCamController implements OpenCamController {
 
     for (final SecurityDevice dev : securityDevices.values()) {
       final AlarmCheckJob job = new AlarmCheckJob(dev, lastAlarm, lastNotConnectedAlarm, permanentDisconnectDelay, this);
-      service.scheduleWithFixedDelay(job, initialDelay, alarmCheck, TimeUnit.MILLISECONDS);
+      service.scheduleWithFixedDelay(job, config.getInitialDelay(), alarmCheck, TimeUnit.MILLISECONDS);
       this.alarmCheckJobs.add(job);
     }
 
     for (final ImageSource src : imageSources) {
       final ImageAcquisitionJob job = new ImageAcquisitionJob(src, localcache, this);
-      cameraThreads.scheduleWithFixedDelay(job, initialDelay, cameraDelay, TimeUnit.MILLISECONDS);
+      cameraThreads.scheduleWithFixedDelay(job, config.getInitialDelay(), cameraDelay, TimeUnit.MILLISECONDS);
       this.imageJobs.put(src.getName(), job);
-      service.scheduleWithFixedDelay(new ProcessImageJob(src.getName(), this), initialDelay, processImagesEvery, TimeUnit.MILLISECONDS);
+      service.scheduleWithFixedDelay(new ProcessImageJob(src.getName(), this), config.getInitialDelay(), processImagesEvery, TimeUnit.MILLISECONDS);
     }
 
     final StateTracker tracker = new StateTracker(this, emailer, abridgedEmail);
-    service.scheduleAtFixedRate(tracker, initialDelay, stateTrackerDelay, TimeUnit.MILLISECONDS);
+    service.scheduleAtFixedRate(tracker, config.getInitialDelay(), stateTrackerDelay, TimeUnit.MILLISECONDS);
 
     final CleanDisk disk = new CleanDisk(localcache, cleanDiskGoal, deleteAndCheck);
-    service.scheduleWithFixedDelay(disk, initialDelay, cleanDiskEvery, TimeUnit.MILLISECONDS);
+    service.scheduleWithFixedDelay(disk, config.getInitialDelay(), cleanDiskEvery, TimeUnit.MILLISECONDS);
 
-    service.scheduleWithFixedDelay(new ArchiveJob(), initialDelay, getIProp("offsite.maxTime") * 1000, TimeUnit.MILLISECONDS);
+    service.scheduleWithFixedDelay(new ArchiveJob(archive), config.getInitialDelay(), config.getMaxUploadDelay(), TimeUnit.MILLISECONDS);
 
     try {
       while (running) {
