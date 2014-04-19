@@ -104,4 +104,8 @@ public class ClosedLoopArchivingController implements OpenCamController {
   public Collection<SecurityDeviceStatus> getDeviceStatus() {
     return new ArrayList<SecurityDeviceStatus>();
   }
+
+  public void setSystemArmed(final boolean armed, final String who) {
+    // we don't care
+  }
 }

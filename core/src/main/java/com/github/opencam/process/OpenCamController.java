@@ -19,4 +19,6 @@ public interface OpenCamController {
   public String getStatusString();
 
   public Collection<SecurityDeviceStatus> getDeviceStatus();
+
+  public void setSystemArmed(boolean armed, String who);
 }

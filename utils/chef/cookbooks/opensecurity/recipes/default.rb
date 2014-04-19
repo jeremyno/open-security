@@ -8,8 +8,10 @@
 # All rights reserved - Do Not Redistribute
 #
 
+
 execute "update" do
-  command "apt-get update -f -y"
+  not_if { File.exists?("/etc/opensecurity.updated") }
+  command "apt-get update -f -y && touch /etc/opensecurity.updated"
 end
 
 ["openjdk-7-jdk",node[:opensecurity][:tomcat][:package],"curl"].each do |pkg|
