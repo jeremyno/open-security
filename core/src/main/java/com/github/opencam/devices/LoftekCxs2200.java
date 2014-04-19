@@ -33,6 +33,7 @@ import com.github.opencam.security.AlarmStatus;
 import com.github.opencam.security.SecurityDevice;
 import com.github.opencam.ui.SecurityPlugin;
 import com.github.opencam.util.ApplicationProperties;
+import com.github.opencam.util.ExceptionUtils;
 import com.github.opencam.util.MapUtils;
 
 public class LoftekCxs2200 implements ImageSource, SecurityDevice, SecurityPlugin, HttpUser {
@@ -173,6 +174,9 @@ public class LoftekCxs2200 implements ImageSource, SecurityDevice, SecurityPlugi
         return out;
       } catch (final Exception f) {
         disconnectOverride = true;
+        if (ExceptionUtils.isConnectionException(f)) {
+          return null;
+        }
         throw new RuntimeException(f);
       }
     }

@@ -1,5 +1,8 @@
 package com.github.opencam.process;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 import com.github.opencam.imagegrabber.ImageSource;
 import com.github.opencam.imagegrabber.Resource;
 
@@ -15,6 +18,8 @@ public class ClosedLoopImageThread extends Thread {
 
   boolean run = true;
 
+  Logger log = Logger.getLogger(getClass().getCanonicalName());
+
   public ClosedLoopImageThread(final ImageSource src, final Archiver archiver, final long targetTime) {
     super();
     this.src = src;
@@ -25,19 +30,22 @@ public class ClosedLoopImageThread extends Thread {
   @Override
   public void run() {
     while (run) {
-      lastResource = src.getImage();
-      archiver.processImage(lastResource);
-      lastTime = System.currentTimeMillis() - lastStart;
-      lastStart = System.currentTimeMillis();
-      lastResource.addNotes("Last process time: " + lastTime + " ms");
-
-      lastWait = targetTime - lastTime;
-
-      lastWait = Math.max(lastWait, 100);
       try {
+        lastResource = src.getImage();
+
+        if (lastResource != null) {
+          archiver.processImage(lastResource);
+          lastTime = System.currentTimeMillis() - lastStart;
+          lastStart = System.currentTimeMillis();
+          lastResource.addNotes("Last process time: " + lastTime + " ms");
+        }
+        lastWait = targetTime - lastTime;
+
+        lastWait = Math.max(lastWait, 100);
+
         Thread.sleep(lastWait);
-      } catch (final InterruptedException e) {
-        throw new RuntimeException(e);
+      } catch (final Exception e) {
+        log.log(Level.WARNING, "Problem getting image for " + src.getName(), e);
       }
     }
   }
