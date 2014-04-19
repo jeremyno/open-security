@@ -14,9 +14,9 @@ public class ImageAcquisitionJob implements Runnable {
   final Logger log = Logger.getLogger(getClass().getCanonicalName());
   String localcache;
   Resource lastImage;
-  OpenCamController controller;
+  PoolingOpenCamController controller;
 
-  public ImageAcquisitionJob(final ImageSource src, final String localcache, final OpenCamController controller) {
+  public ImageAcquisitionJob(final ImageSource src, final String localcache, final PoolingOpenCamController controller) {
     this.src = src;
     this.localcache = localcache;
     name = src.getName();

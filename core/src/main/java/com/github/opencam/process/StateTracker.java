@@ -8,12 +8,12 @@ import com.github.opencam.email.SendEmail;
 import com.github.opencam.security.AlarmStatus;
 
 public class StateTracker implements Runnable {
-  OpenCamController proc;
+  PoolingOpenCamController proc;
   AlarmStatus lastStatus = null;
   private final SendEmail emailer;
   private final List<String> alertEmailRecipients;
 
-  public StateTracker(final OpenCamController proc, final SendEmail emailer, final List<String> shortEmail) {
+  public StateTracker(final PoolingOpenCamController proc, final SendEmail emailer, final List<String> shortEmail) {
     super();
     this.proc = proc;
     this.emailer = emailer;

@@ -1,7 +1,7 @@
 <%@page import="java.security.Principal"%>
-<%@page import="com.github.opencam.process.OpenCamController"%>
+<%@page import="com.github.opencam.process.PoolingOpenCamController"%>
 <%
-  OpenCamController opencam = (OpenCamController)request.getAttribute("opencam");
+  PoolingOpenCamController opencam = (PoolingOpenCamController)request.getAttribute("opencam");
 String act = request.getParameter("do"); 
 if (act != null) {
   String name = request.getRemoteUser() + "@" + request.getRemoteAddr();

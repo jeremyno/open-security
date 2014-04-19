@@ -114,4 +114,8 @@ public class ApplicationProperties {
   public boolean getBoolean(final String string) {
     return Boolean.parseBoolean(getProperty(string));
   }
+
+  public Map<String, String> asMap() {
+    return new HashMap<String, String>(props);
+  }
 }

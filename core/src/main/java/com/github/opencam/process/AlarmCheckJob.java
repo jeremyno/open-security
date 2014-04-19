@@ -20,9 +20,9 @@ public class AlarmCheckJob implements Runnable {
   final long permenentDisconnectDelay;
   long lastCheckin = 0;
   private String name;
-  private final OpenCamController controller;
+  private final PoolingOpenCamController controller;
 
-  public AlarmCheckJob(final SecurityDevice device, final LastTimestamp alarmStamp, final LastTimestamp disconnectStamp, final long permanetDisconnectDelay, final OpenCamController controller) {
+  public AlarmCheckJob(final SecurityDevice device, final LastTimestamp alarmStamp, final LastTimestamp disconnectStamp, final long permanetDisconnectDelay, final PoolingOpenCamController controller) {
     super();
     this.device = device;
     this.alarmStamp = alarmStamp;

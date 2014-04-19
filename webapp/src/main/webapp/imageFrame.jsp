@@ -1,9 +1,9 @@
 <%@page import="java.io.PrintWriter"%>
 <%@page import="com.github.opencam.process.SystemStatusWriter"%>
 <%@page import="com.github.opencam.process.SecurityDeviceStatus"%>
-<%@page import="com.github.opencam.process.OpenCamController"%>
+<%@page import="com.github.opencam.process.PoolingOpenCamController"%>
 <%
-  OpenCamController opencam = (OpenCamController)request.getAttribute("opencam");
+  PoolingOpenCamController opencam = (PoolingOpenCamController)request.getAttribute("opencam");
 String width = request.getParameter("w") != null ?request.getParameter("w") : "640";
 %>
 
@@ -18,7 +18,6 @@ String width = request.getParameter("w") != null ?request.getParameter("w") : "6
 <%
 SystemStatusWriter.writeStatus(opencam, new PrintWriter(out));
 %>
-
 <% 
 for (final String i : opencam.getCameraNames()) {
   String loc = "\"images/" + i +".jpg\"";

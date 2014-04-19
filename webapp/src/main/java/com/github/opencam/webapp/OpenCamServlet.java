@@ -23,6 +23,8 @@ import javax.servlet.http.HttpServletResponse;
 
 import com.github.opencam.imagegrabber.Resource;
 import com.github.opencam.process.OpenCamController;
+import com.github.opencam.process.SystemConfiguration;
+import com.github.opencam.util.ClassLoaderUtils;
 
 public class OpenCamServlet implements Filter {
   OpenCamController opencam;
@@ -104,7 +106,10 @@ public class OpenCamServlet implements Filter {
 
   public void init(final FilterConfig arg0) throws ServletException {
     final String configPath = System.getProperty("opencam.configPath");
-    opencam = new OpenCamController(configPath);
+    final SystemConfiguration config = new SystemConfiguration(configPath);
+    final String controllerClazz = config.getAplicationProperties().getProperty("controller.class", "com.github.opencam.process.PoolingOpenCamController");
+
+    opencam = ClassLoaderUtils.newObject(controllerClazz, config);
     opencam.start();
   }
 }
