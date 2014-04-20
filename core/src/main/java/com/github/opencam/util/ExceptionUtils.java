@@ -10,4 +10,12 @@ public class ExceptionUtils {
 
     return false;
   }
+
+  public static boolean isMemoryException(final Throwable e) {
+    if (e != null && (e instanceof OutOfMemoryError || isMemoryException(e.getCause()))) {
+      return true;
+    }
+
+    return false;
+  }
 }

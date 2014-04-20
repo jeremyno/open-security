@@ -5,6 +5,8 @@ import java.util.logging.Logger;
 
 import com.github.opencam.imagegrabber.ImageSource;
 import com.github.opencam.imagegrabber.Resource;
+import com.github.opencam.util.ExceptionUtils;
+import com.github.opencam.util.ThreadUtils;
 
 public class ClosedLoopImageThread extends Thread {
   ImageSource src;
@@ -46,6 +48,10 @@ public class ClosedLoopImageThread extends Thread {
         Thread.sleep(lastWait);
       } catch (final Exception e) {
         log.log(Level.WARNING, "Problem getting image for " + src.getName(), e);
+        ThreadUtils.sleep(5000);
+        if (ExceptionUtils.isMemoryException(e)) {
+          ThreadUtils.sleep(5000);
+        }
       }
     }
   }

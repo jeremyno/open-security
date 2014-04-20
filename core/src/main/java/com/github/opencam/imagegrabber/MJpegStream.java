@@ -39,7 +39,7 @@ public class MJpegStream {
 
   @SuppressWarnings("resource")
   public Resource getNextEntity() {
-    final ByteArrayOutputStream outstream = new ByteArrayOutputStream();
+    final ByteArrayOutputStream outstream = new ByteArrayOutputStream(StreamUtils.DEFAULT_JPG_BUFFER_SIZE);
 
     int boundryI = 0;
     final char[] boundryTrack = new char[end.length];
