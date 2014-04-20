@@ -3,9 +3,6 @@ package com.github.opencam.webapp;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.lang.Thread.State;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.regex.Matcher;
@@ -25,6 +22,7 @@ import com.github.opencam.imagegrabber.Resource;
 import com.github.opencam.process.OpenCamController;
 import com.github.opencam.process.SystemConfiguration;
 import com.github.opencam.util.ClassLoaderUtils;
+import com.github.opencam.util.ThreadUtils;
 
 public class OpenCamServlet implements Filter {
   OpenCamController opencam;
@@ -61,21 +59,15 @@ public class OpenCamServlet implements Filter {
             return;
           } else if (name.equals("threads")) {
             resp.setContentType("text/html");
-            final Map<Thread, StackTraceElement[]> t = Thread.getAllStackTraces();
             final PrintWriter writer = resp.getWriter();
-            final Map<State, List<Entry<Thread, StackTraceElement[]>>> running = new HashMap<Thread.State, List<Map.Entry<Thread, StackTraceElement[]>>>();
-            for (final Entry<Thread, StackTraceElement[]> i : t.entrySet()) {
-              final State state = i.getKey().getState();
-              if (running.get(state) == null) {
-                running.put(state, new ArrayList<Map.Entry<Thread, StackTraceElement[]>>());
-              }
-              running.get(state).add(i);
-            }
 
-            for (final Entry<State, List<Entry<Thread, StackTraceElement[]>>> state : running.entrySet()) {
+            final Map<State, Map<Thread, StackTraceElement[]>> running = ThreadUtils.getAllStackTracesByState();
+            writer.println("Threads in " + running.keySet());
+
+            for (final Entry<State, Map<Thread, StackTraceElement[]>> state : running.entrySet()) {
               writer.println("<h1>" + state.getKey() + "</h2>");
-              writer.println("<div style='padding-left:4em;>");
-              for (final Entry<Thread, StackTraceElement[]> i : state.getValue()) {
+              writer.println("<div style='padding-left:4em;'>");
+              for (final Entry<Thread, StackTraceElement[]> i : state.getValue().entrySet()) {
                 writer.println("<h2>" + i.getKey().getName() + "</h2>");
                 writer.println("<ul>");
                 for (final StackTraceElement j : i.getValue()) {

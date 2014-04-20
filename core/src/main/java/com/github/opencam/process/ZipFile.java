@@ -16,7 +16,7 @@ public class ZipFile {
   int count = 0;
 
   public ZipFile() {
-    stream = new ByteArrayOutputStream(30 * StreamUtils.DEFAULT_JPG_BUFFER_SIZE * 15);
+    stream = new ByteArrayOutputStream(30 * StreamUtils.DEFAULT_JPG_BUFFER_SIZE);
     zos = new ZipOutputStream(stream);
   }
 

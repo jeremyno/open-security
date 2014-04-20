@@ -8,7 +8,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 
 public class StreamUtils {
-  public static final int DEFAULT_JPG_BUFFER_SIZE = 131072;
+  public static final int DEFAULT_JPG_BUFFER_SIZE = 40960;
 
   public static String readLine(final InputStream stream) {
     final ByteArrayOutputStream bos = new ByteArrayOutputStream(DEFAULT_JPG_BUFFER_SIZE);

@@ -22,7 +22,6 @@ import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.params.BasicHttpParams;
 import org.apache.http.params.HttpConnectionParams;
 import org.apache.http.params.HttpParams;
-import org.apache.http.util.EntityUtils;
 
 import com.github.opencam.imagegrabber.BeanResource;
 import com.github.opencam.imagegrabber.ImageSource;
@@ -203,7 +202,9 @@ public class LoftekCxs2200 implements ImageSource, SecurityDevice, SecurityPlugi
       IOUtils.copy(content, bos);
       IOUtils.closeQuietly(content);
       IOUtils.closeQuietly(bos);
-      EntityUtils.toByteArray(entity);
+      if (bos.size() > StreamUtils.DEFAULT_JPG_BUFFER_SIZE) {
+        System.out.println("Size: " + bos.size() + " " + (double) bos.size() * 100 / StreamUtils.DEFAULT_JPG_BUFFER_SIZE + "% of default");
+      }
 
       final SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd_kkmmss_SSS");
       final String filename = sdf.format(new Date()) + "_" + lastStatus + ".jpg";

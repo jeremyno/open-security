@@ -43,6 +43,10 @@ bash "Add config option" do
   EOH
 end
 
+execute "Update memory settings" do
+  command "sed 's/-Xmx.*m/-Xmx256m/g' -i #{node[:opensecurity][:tomcat][:defaultConfig]}"
+end
+
 directory node[:opensecurity][:configDir] do
   owner node[:opensecurity][:tomcat][:user]
   owner node[:opensecurity][:tomcat][:group]

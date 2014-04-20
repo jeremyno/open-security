@@ -25,7 +25,7 @@ public class ClosedLoopImageThread extends Thread {
   Logger log = Logger.getLogger(getClass().getCanonicalName());
 
   public ClosedLoopImageThread(final ImageSource src, final Archiver archiver, final long targetTime) {
-    super();
+    super(src.getName() + " Processor");
     this.src = src;
     this.archiver = archiver;
     this.targetTime = targetTime;
@@ -51,8 +51,12 @@ public class ClosedLoopImageThread extends Thread {
         }
 
         Thread.sleep(lastWait);
-      } catch (final Exception e) {
+      } catch (final Throwable e) {
         log.log(Level.WARNING, "Problem getting image for " + src.getName(), e);
+        if (e instanceof Error && !ExceptionUtils.isMemoryException(e)) {
+          throw (Error) e;
+        }
+
         ThreadUtils.sleep(5000);
         if (ExceptionUtils.isMemoryException(e)) {
           ThreadUtils.sleep(5000);

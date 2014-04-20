@@ -3,6 +3,8 @@ package com.github.opencam.process;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import com.github.opencam.util.ExceptionUtils;
+
 final class ArchiveJob implements Runnable {
   /**
    * 
@@ -18,8 +20,11 @@ final class ArchiveJob implements Runnable {
   public void run() {
     try {
       archive.doUpload();
-    } catch (final Exception e) {
+    } catch (final Throwable e) {
       log.log(Level.WARNING, "Unable to do upload", e);
+      if (e instanceof Error && !ExceptionUtils.isMemoryException(e)) {
+        throw (Error)e;
+      }
     }
   }
 }

@@ -52,7 +52,7 @@ public class ClosedLoopArchivingController implements OpenCamController {
     }
 
     names = new ArrayList<String>(config.getCamConfigs().keySet());
-    pool.scheduleWithFixedDelay(new ArchiveJob(archive), config.getInitialDelay(), config.getMaxUploadDelay(), TimeUnit.MILLISECONDS);
+    pool.scheduleAtFixedRate(new ArchiveJob(archive), config.getInitialDelay(), config.getMaxUploadDelay(), TimeUnit.MILLISECONDS);
   }
 
   public Archiver buildArchiver() {
