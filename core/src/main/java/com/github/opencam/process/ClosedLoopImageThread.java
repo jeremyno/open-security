@@ -41,13 +41,19 @@ public class ClosedLoopImageThread extends Thread {
         final Date after = new Date();
         if (r != null) {
           lastResource = r;
-          archiver.processImage(lastResource);
-          lastTime = System.currentTimeMillis() - lastStart;
-          lastStart = System.currentTimeMillis();
-          lastWait = targetTime - lastTime;
-          lastWait = Math.max(lastWait, 100);
-          lastResource.addNotes("Processing: " + lastTime + "ms, Sleep: " + lastWait + "ms");
-          lastResource.addNotes("Acquired between " + sdf.format(before) + " & " + sdf.format(after));
+          try {
+            archiver.processImage(lastResource);
+          } catch (final Exception e) {
+            lastResource.addNotes(e.getMessage());
+            throw new RuntimeException(e);
+          } finally {
+            lastTime = System.currentTimeMillis() - lastStart;
+            lastStart = System.currentTimeMillis();
+            lastWait = targetTime - lastTime;
+            lastWait = Math.max(lastWait, 100);
+            lastResource.addNotes("Processing: " + lastTime + "ms, Sleep: " + lastWait + "ms");
+            lastResource.addNotes("Acquired between " + sdf.format(before) + " & " + sdf.format(after));
+          }
         }
 
         Thread.sleep(lastWait);
