@@ -6,6 +6,12 @@
 <%
   OpenCamController opencam = (OpenCamController)request.getAttribute("opencam");
 String width = request.getParameter("w") != null ?request.getParameter("w") : "640";
+
+int w = Integer.parseInt(width);
+w = (int)(175*((double)w / 640));
+if (w > 100) {
+  w = 100;
+}
 %>
 
 <h2>System status is <%= opencam.isSystemArmed() ? "Armed" : "Disarmed" %> (<%= opencam.getStatusString() %>)</h2>
@@ -20,9 +26,10 @@ String width = request.getParameter("w") != null ?request.getParameter("w") : "6
 SystemStatusWriter.writeStatus(opencam, new PrintWriter(out));
 %>
 <% 
+
 for (final String i : opencam.getCameraNames()) {
   String loc = "\"images/" + i +".jpg\"";
-  out.println("<div style=\"display:inline-block\">");
+  out.println("<div style=\"display:inline-block;font-size:" + w + "%\">");
   out.println("<a href="+loc+"><img src="+loc+" width=\"" + width + "\"/></a><br />");
   Resource r = opencam.getLastImage(i);
   if (r != null && !r.getNotes().isEmpty()) {

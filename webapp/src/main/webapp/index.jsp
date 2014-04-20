@@ -24,6 +24,22 @@ String rate = request.getParameter("r") != null ? request.getParameter("r") : "5
 <html>
 <head>
 <title>Camera System</title>
+<style type="text/css">
+ul
+{
+list-style-type: none;
+padding: 0px;
+margin: 0px;
+}
+
+ul li
+{
+background-image: url(sqpurple.gif);
+background-repeat: no-repeat;
+background-position: 0px 5px; 
+padding-left: 7px; 
+}
+</style>
 <script type="text/javascript" src="javascript/jquery-2.0.3.min.js"></script>
 <script type="text/javascript">
 var func = function() {
