@@ -140,8 +140,9 @@ public class PoolingOpenCamController implements OpenCamController {
     for (final Entry<String, Map<String, String>> camConfig : config.getCamConfigs().entrySet()) {
       final Map<String, String> configs = camConfig.getValue();
       final String name = camConfig.getKey();
+      final ApplicationProperties camProps = new ApplicationProperties(configs);
       try {
-        final Object plugin = ClassLoaderUtils.loadObject(configs.get("class"), config.getAplicationProperties(), name, cm);
+        final Object plugin = ClassLoaderUtils.loadObject(configs.get("class"), camProps, name, cm);
         if (plugin instanceof SecurityDevice) {
           securityDevices.put(name, (SecurityDevice) plugin);
         }

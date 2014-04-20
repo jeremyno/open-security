@@ -1,5 +1,7 @@
 package com.github.opencam.process;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -33,17 +35,20 @@ public class ClosedLoopImageThread extends Thread {
   public void run() {
     while (run) {
       try {
-        lastResource = src.getImage();
-
-        if (lastResource != null) {
+        final SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss");
+        final Date before = new Date();
+        final Resource r = src.getImage();
+        final Date after = new Date();
+        if (r != null) {
+          lastResource = r;
           archiver.processImage(lastResource);
           lastTime = System.currentTimeMillis() - lastStart;
           lastStart = System.currentTimeMillis();
-          lastResource.addNotes("Last process time: " + lastTime + " ms");
+          lastWait = targetTime - lastTime;
+          lastWait = Math.max(lastWait, 100);
+          lastResource.addNotes("Processing: " + lastTime + "ms, Sleep: " + lastWait + "ms");
+          lastResource.addNotes("Acquired between " + sdf.format(before) + " & " + sdf.format(after));
         }
-        lastWait = targetTime - lastTime;
-
-        lastWait = Math.max(lastWait, 100);
 
         Thread.sleep(lastWait);
       } catch (final Exception e) {

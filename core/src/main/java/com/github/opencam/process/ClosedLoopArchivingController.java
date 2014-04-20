@@ -94,11 +94,7 @@ public class ClosedLoopArchivingController implements OpenCamController {
   }
 
   public String getStatusString() {
-    final List<String> responseTimes = new ArrayList<String>();
-    for (final ClosedLoopImageThread thread : threads) {
-      responseTimes.add(thread.getSrc().getName() + "/" + thread.getLastProcessTime() + "{" + thread.getLastWait() + "}");
-    }
-    return "Operating. Last Response Times: " + responseTimes;
+    return "Operating";
   }
 
   public Collection<SecurityDeviceStatus> getDeviceStatus() {

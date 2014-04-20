@@ -1,5 +1,7 @@
 package com.github.opencam.process;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -28,8 +30,15 @@ public class ImageAcquisitionJob implements Runnable {
 
   public void run() {
     try {
+      final SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss");
+      final Date before = new Date();
+      final long start = System.currentTimeMillis();
       final Resource image = src.getImage();
+      final Date after = new Date();
+      image.addNotes("Acquired between " + sdf.format(before) + " & " + sdf.format(after));
       controller.processRawImage(name, image);
+      final long took = System.currentTimeMillis() - start;
+      image.addNotes("Processing " + took + "ms.");
 
       lastImage = image;
     } catch (final Exception e) {
