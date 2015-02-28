@@ -12,3 +12,4 @@ default[:opensecurity][:tomcat][:service]=node[:opensecurity][:tomcat][:package]
 default[:opensecurity][:tomcat][:webappDir]="/var/lib/tomcat7/webapps"
 default[:opensecurity][:tomcat][:defaultConfig]="/etc/default/tomcat7"
 default[:opensecurity][:tomcat][:userfile]="/etc/tomcat7/tomcat-users.xml"
+default[:opensecurity][:tomcat][:maxmem]="256m"

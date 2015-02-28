@@ -44,7 +44,7 @@ bash "Add config option" do
 end
 
 execute "Update memory settings" do
-  command "sed 's/-Xmx.*m/-Xmx256m/g' -i #{node[:opensecurity][:tomcat][:defaultConfig]}"
+  command "sed 's/-Xmx.*m/-Xmx#{node[:opensecurity][:tomcat][:maxmem]}/g' -i #{node[:opensecurity][:tomcat][:defaultConfig]}"
 end
 
 directory node[:opensecurity][:configDir] do

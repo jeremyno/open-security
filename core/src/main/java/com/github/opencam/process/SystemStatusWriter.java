@@ -3,6 +3,8 @@ package com.github.opencam.process;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 
+import com.github.opencam.util.ProcessUtils;
+
 public class SystemStatusWriter {
   OpenCamController controller;
 
@@ -30,6 +32,7 @@ public class SystemStatusWriter {
     out.println();
     out.println("<li>Processing is running " + (float) (System.currentTimeMillis() - lastTimestamp) / 1000 + " to " + (float) (System.currentTimeMillis() - firstTimestamp) / 1000 + " seconds behind.</li>");
     out.println("<li>Current System time is " + new java.util.Date() + "</li>");
+    out.println("<li>" + ProcessUtils.exec("uptime") + "</li>");
     out.println("</ul>");
   }
 
